@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -85,13 +86,15 @@ func main() {
 		v1Router.Post("/notes", apiCfg.middlewareAuth(apiCfg.handlerNotesCreate))
 	}
 
-	v1Router.Get("/healthz", handlerReadiness)
-
-	router.Mount("/v1", v1Router)
-	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
-	}
+	v1Router.Get("/healthz", handlerReadiness)        router.Mount("/v1", v1Router)
+        srv := &http.Server{
+                Addr:              ":" + port,
+                Handler:           router,
+                ReadHeaderTimeout: 10 * time.Second,
+                ReadTimeout:       30 * time.Second,
+                WriteTimeout:      30 * time.Second,
+                IdleTimeout:       120 * time.Second,
+        }
 
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
